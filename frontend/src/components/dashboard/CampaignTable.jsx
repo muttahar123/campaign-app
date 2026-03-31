@@ -17,10 +17,10 @@ export function CampaignTable({ campaigns }) {
 
   const filteredAndSortedCampaigns = useMemo(() => {
     let sortableItems = [...campaigns];
-    
+
     // Filter
     if (searchTerm) {
-      sortableItems = sortableItems.filter(item => 
+      sortableItems = sortableItems.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -115,8 +115,8 @@ export function CampaignTable({ campaigns }) {
                         <span>{formatCurrency(campaign.spend)}</span>
                         {campaign.spend > 0 && campaign.budget > 0 && (
                           <div className="w-32 bg-slate-200 rounded-full h-1.5 dark:bg-slate-700 overflow-hidden">
-                            <div 
-                              className={`h-1.5 rounded-full ${campaign.spend >= campaign.budget * 0.9 ? 'bg-rose-500' : 'bg-primary'}`} 
+                            <div
+                              className={`h-1.5 rounded-full ${campaign.spend >= campaign.budget * 0.9 ? 'bg-rose-500' : 'bg-primary'}`}
                               style={{ width: `${Math.min((campaign.spend / campaign.budget) * 100, 100)}%` }}
                             ></div>
                           </div>
