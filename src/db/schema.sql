@@ -15,8 +15,17 @@ CREATE TABLE IF NOT EXISTS campaigns (
     impressions INT DEFAULT 0,
     clicks INT DEFAULT 0,
     conversions INT DEFAULT 0,
+    alert_threshold_percent DECIMAL(5, 2) DEFAULT 0.90,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_campaigns_deleted_at ON campaigns(deleted_at) WHERE deleted_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id SERIAL PRIMARY KEY,
+    campaign_id INT REFERENCES campaigns(id),
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

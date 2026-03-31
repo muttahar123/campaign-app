@@ -3,8 +3,19 @@ import { getIO } from '../services/socket.js';
 
 export const getAllCampaigns = async (req, res) => {
   try {
-    const campaigns = await CampaignModel.findAll();
-    res.json(campaigns);
+    const { limit, page, status, sort, order } = req.query;
+    const offset = page ? (Math.max(1, parseInt(page)) - 1) * (limit || 10) : 0;
+    
+    // Pass everything to the model
+    const campaignsData = await CampaignModel.findAll({ 
+      limit: limit || 10, 
+      offset, 
+      sort, 
+      order, 
+      status 
+    });
+    
+    res.json(campaignsData);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -46,15 +57,23 @@ export const updateCampaign = async (req, res) => {
       return res.status(404).json({ error: 'Campaign not found or deleted' });
     }
 
-    // Rule Engine: Check if spend >= 90% of budget
-    if (campaign.budget > 0 && Number(campaign.spend) / Number(campaign.budget) >= 0.9) {
+    // Rule Engine: Check if spend exceeds threshold
+    const thresholdPercentage = Number(campaign.alert_threshold_percent) || 0.90;
+    if (campaign.budget > 0 && Number(campaign.spend) / Number(campaign.budget) >= thresholdPercentage) {
       const io = getIO();
+      const message = `Alert: Campaign '${campaign.name}' has exceeded ${(thresholdPercentage * 100).toFixed(0)}% of its budget.`;
+      
+      // Save alert to DB
+      const alert = await CampaignModel.createAlert(campaign.id, message);
+      
+      // Emit to clients
       io.emit('budget_alert', {
+        alertId: alert.id,
         campaignId: campaign.id,
         name: campaign.name,
         spend: Number(campaign.spend),
         budget: Number(campaign.budget),
-        message: `Alert: Campaign '${campaign.name}' has exceeded 90% of its budget.`
+        message: alert.message
       });
     }
     

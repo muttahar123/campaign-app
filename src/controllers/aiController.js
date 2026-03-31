@@ -7,10 +7,21 @@ const openai = new OpenAI({
 });
 
 export const generateCopy = async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' });
+  const { product, tone, platform, word_limit } = req.body;
+  if (!product || !platform) {
+    return res.status(400).json({ error: 'Product and platform are required fields' });
   }
+
+  const generatedPrompt = `Generate advertising copy.
+Product: ${product}
+Tone: ${tone || 'Professional'}
+Platform: ${platform}
+Word limit: ${word_limit || 100}
+
+Format the output precisely to include:
+- Headline
+- Body
+- CTA`;
 
   try {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -20,8 +31,8 @@ export const generateCopy = async (req, res) => {
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: 'You are an expert ad copywriter. Output high-converting headlines and ad body texts.' },
-        { role: 'user', content: prompt }
+        { role: 'system', content: 'You are an expert ad copywriter.' },
+        { role: 'user', content: generatedPrompt }
       ],
       stream: true,
     });
@@ -37,11 +48,59 @@ export const generateCopy = async (req, res) => {
     res.end();
   } catch (error) {
     console.error('OpenAI Error:', error);
-    // If headers are already sent, we cannot send 500 status code cleanly through JSON
     if (!res.headersSent) {
       res.status(500).json({ error: 'Error generating copy' });
     } else {
       res.end();
     }
+  }
+};
+
+export const generateSocial = async (req, res) => {
+  const { platform, campaign_goal, brand_voice } = req.body;
+  
+  if (!platform || !campaign_goal) {
+    return res.status(400).json({ error: 'Platform and campaign_goal are required' });
+  }
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are a social media manager. Generate 5 distinct caption options. Output JSON array of strings.' },
+        { role: 'user', content: `Platform: ${platform}. Goal: ${campaign_goal}. Voice: ${brand_voice || 'Friendly'}` }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    const rawContent = response.choices[0].message.content;
+    res.json(JSON.parse(rawContent));
+  } catch (err) {
+    console.error('OpenAI Error:', err);
+    res.status(500).json({ error: 'Failed to generate social copy' });
+  }
+};
+
+export const generateHashtags = async (req, res) => {
+  const { content, industry } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are an SEO expert. Output exactly 10 relevant hashtags based on the content and industry as a JSON array of strings under the key "hashtags".' },
+        { role: 'user', content: `Content: ${content}. Industry: ${industry || 'General'}` }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    res.json(JSON.parse(response.choices[0].message.content));
+  } catch (err) {
+    console.error('OpenAI Error:', err);
+    res.status(500).json({ error: 'Failed to generate hashtags' });
   }
 };

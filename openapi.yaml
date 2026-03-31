@@ -1,0 +1,191 @@
+openapi: 3.0.0
+info:
+  title: Campaign Management API
+  version: 1.0.0
+  description: RESTful API for managing advertising campaigns and AI content generation.
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /campaigns:
+    get:
+      summary: List all campaigns
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: sort
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of campaigns with pagination metadata.
+    post:
+      summary: Create a new campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignInput'
+      responses:
+        '201':
+          description: Created
+  /campaigns/{id}:
+    get:
+      summary: Get campaign by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Campaign details
+    put:
+      summary: Update a campaign
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignInput'
+      responses:
+        '200':
+          description: Updated campaign
+    delete:
+      summary: Soft delete a campaign
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Deleted
+  /generate/copy:
+    post:
+      summary: Generate Ad Copy via SSE
+      description: Returns a Server-Sent Events stream.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product: 
+                  type: string
+                tone: 
+                  type: string
+                platform: 
+                  type: string
+                word_limit: 
+                  type: integer
+      responses:
+        '200':
+          description: Text stream
+  /generate/social:
+    post:
+      summary: Generate Social Captions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platform: 
+                  type: string
+                campaign_goal: 
+                  type: string
+                brand_voice: 
+                  type: string
+      responses:
+        '200':
+          description: JSON Object with options array
+  /generate/hashtags:
+    post:
+      summary: Generate Hashtags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content: 
+                  type: string
+                industry: 
+                  type: string
+      responses:
+        '200':
+          description: JSON Object with hashtags array
+components:
+  schemas:
+    CampaignInput:
+      type: object
+      required:
+        - name
+        - client
+      properties:
+        name:
+          type: string
+        client:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, paused, completed]
+        budget:
+          type: number
+        spend:
+          type: number
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+        conversions:
+          type: integer
+        alert_threshold_percent:
+          type: number

@@ -1,27 +1,69 @@
 {
   "summary": {
-    "totalImpressions": 2543000,
-    "avgCTR": 4.2,
-    "avgROAS": 3.1,
-    "totalSpend": 125000
+    "totalImpressions": 4850000,
+    "totalClicks": 125000,
+    "totalConversions": 4500,
+    "avgCTR": 2.58,
+    "avgROAS": 3.8,
+    "totalSpend": 124500
   },
-  "trends": [
-    { "date": "Mar 01", "impressions": 80000, "clicks": 3200, "spend": 4000, "conversions": 105 },
-    { "date": "Mar 02", "impressions": 82000, "clicks": 3310, "spend": 4150, "conversions": 110 },
-    { "date": "Mar 03", "impressions": 85000, "clicks": 3450, "spend": 4300, "conversions": 115 },
-    { "date": "Mar 04", "impressions": 83000, "clicks": 3400, "spend": 4200, "conversions": 112 },
-    { "date": "Mar 05", "impressions": 88000, "clicks": 3600, "spend": 4450, "conversions": 120 },
-    { "date": "Mar 06", "impressions": 89000, "clicks": 3650, "spend": 4500, "conversions": 122 },
-    { "date": "Mar 07", "impressions": 91000, "clicks": 3800, "spend": 4650, "conversions": 128 },
-    { "date": "Mar 08", "impressions": 87000, "clicks": 3550, "spend": 4350, "conversions": 118 },
-    { "date": "Mar 09", "impressions": 89500, "clicks": 3680, "spend": 4550, "conversions": 125 },
-    { "date": "Mar 10", "impressions": 92000, "clicks": 3850, "spend": 4700, "conversions": 130 }
-  ],
   "campaigns": [
-    { "id": 1, "name": "Spring Sale 2026", "status": "active", "budget": 20000, "spend": 15400, "roas": 3.4 },
-    { "id": 2, "name": "Retargeting - Cart Abandoners", "status": "active", "budget": 10000, "spend": 8200, "roas": 4.1 },
-    { "id": 3, "name": "Brand Awareness Q1", "status": "paused", "budget": 50000, "spend": 25000, "roas": 1.2 },
-    { "id": 4, "name": "New Product Launch", "status": "completed", "budget": 30000, "spend": 30000, "roas": 2.8 },
-    { "id": 5, "name": "Summer Teaser", "status": "draft", "budget": 15000, "spend": 0, "roas": 0.0 }
+    {
+      "id": "c001",
+      "name": "Lumiere Summer Launch",
+      "client": "Lumiere Skincare",
+      "status": "active",
+      "budget": 50000,
+      "spend": 32450,
+      "impressions": 2400000,
+      "clicks": 48000,
+      "conversions": 1200,
+      "roas": 4.2
+    },
+    {
+      "id": "c002",
+      "name": "Q3 B2B Lead Gen",
+      "client": "TechFlow Inc",
+      "status": "active",
+      "budget": 20000,
+      "spend": 18500,
+      "impressions": 850000,
+      "clicks": 15000,
+      "conversions": 800,
+      "roas": 2.1
+    },
+    {
+      "id": "c003",
+      "name": "Holiday Clearance",
+      "client": "StyleHaven",
+      "status": "completed",
+      "budget": 75000,
+      "spend": 74000,
+      "impressions": 3500000,
+      "clicks": 180000,
+      "conversions": 8500,
+      "roas": 5.4
+    },
+    {
+      "id": "c004",
+      "name": "App Install Sprint",
+      "client": "FitTrack",
+      "status": "paused",
+      "budget": 10000,
+      "spend": 2500,
+      "impressions": 150000,
+      "clicks": 4500,
+      "conversions": 250,
+      "roas": 1.2
+    }
+  ],
+  "trends": [
+    { "date": "10/01", "impressions": 120000, "spend": 4000 },
+    { "date": "10/05", "impressions": 145000, "spend": 4500 },
+    { "date": "10/10", "impressions": 130000, "spend": 4200 },
+    { "date": "10/15", "impressions": 180000, "spend": 5800 },
+    { "date": "10/20", "impressions": 210000, "spend": 7500 },
+    { "date": "10/25", "impressions": 195000, "spend": 6800 },
+    { "date": "10/30", "impressions": 240000, "spend": 8200 }
   ]
 }
