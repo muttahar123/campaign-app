@@ -43,13 +43,21 @@ app.use('/api/generate', aiRoutes);
 
 // Health check endpoint with model info
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     status: 'OK',
     version: '1.0.0',
     model: 'gpt-4o',
     service: 'campaign-api'
   });
 });
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'Campaign API is running'
+  });
+});
+
 
 app.use((err, req, res, next) => {
   console.error(`[${req.id}] Error:`, err.stack);
