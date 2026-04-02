@@ -15,9 +15,9 @@ A full-stack Advertising Agency Campaign Management System with integrated AI fe
 ---
 
 ## 🏗 Project Structure
+- `/src`: Backend Node.js Express API (Controllers, Models, Routes).
 - `/frontend`: React application (Vite-based).
-- `/backend`: Node.js Express API and Database models.
-- `docker-compose.yml`: Local infrastructure orchestration.
+- `docker-compose.yml`: Infrastructure orchestration.
 
 ---
 
@@ -28,7 +28,7 @@ A full-stack Advertising Agency Campaign Management System with integrated AI fe
 - [Docker & Docker Compose](https://www.docker.com/products/docker-desktop/)
 
 ### 2. Environment Configuration
-Create a `.env` file in the `backend/` directory (use the existing one or copy the template):
+Create a `.env` file in the **project root** directory:
 
 ```env
 PORT=4000
@@ -39,7 +39,7 @@ GEMINI_API_KEY=your-gemini-key
 ```
 
 > [!IMPORTANT]
-> **API Key Update:** You MUST update the `OPENAI_API_KEY` or `GEMINI_API_KEY` in `backend/.env` for the AI Suite (Creative Brief, Social Generator) to function.
+> **API Key Update:** You MUST update the `OPENAI_API_KEY` in the root `.env` for the AI Suite (Creative Brief, Social Generator) to function.
 
 ### 3. Run with Docker (Recommended)
 This will start both the PostgreSQL database and the Backend API on port 4000.
@@ -48,22 +48,29 @@ This will start both the PostgreSQL database and the Backend API on port 4000.
 docker-compose up --build
 ```
 
-### 4. Running Manually
-If you want to run the backend without Docker (ensure you have a local Postgres instance on port 5433):
+---
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+## 🧪 User Flow & Testing Guide
+Follow these steps to test the full-stack integration:
 
-For the frontend:
+### 1. Authentication Flow
+- **Register**: Go to the login screen, click "Create an account", and register a new user.
+- **Login**: Use your credentials to log in. This stores a JWT in your browser for secure API access.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### 2. Campaign Management (CRUD)
+- **Create**: Navigate to "Campaigns" and click "New Campaign". Fill in the name, client, and a budget (e.g., $1000).
+- **Dashboard**: Go to the "Dashboard" to see the KPI cards (Impressions, Spend, CTR) update based on your active campaigns.
+
+### 3. Real-time Budget Alerts (WebSockets)
+- Find your campaign in the table and click **Edit**.
+- Set the **Spend** to something greater than 90% of the budget (e.g., Spend $950 for a $1000 budget).
+- Click **Save**.
+- **Result**: A real-time notification will appear in the top-right "Bell" icon immediately, triggered by the backend logic and sent via Socket.io.
+
+### 4. AI Builder Suite
+- **Creative Brief**: Input your product and goal. Watch the AI stream the brief content in real-time.
+- **Social Media**: Generate platform-specific captions with one click.
+- **Hashtags**: Generate 10 SEO-optimized hashtags based on your content.
 
 ---
 
@@ -76,30 +83,20 @@ Since the frontend is on Vercel, you need a hosting provider for the API and Dat
 1. **Database**: Create a PostgreSQL instance on Render/Railway.
 2. **API**: 
    - Connect your GitHub repo.
-   - Set the root directory to `backend/`.
+   - Set the root directory to `/`.
    - Set build command to `npm install`.
    - Set start command to `node src/index.js`.
 3. **Environment Variables**: Add `DATABASE_URL`, `JWT_SECRET`, and `OPENAI_API_KEY` to the provider's dashboard.
 
 ### Frontend Deployment (Vercel)
-If you need to redeploy or update:
-1. Ensure the `VITE_API_BASE_URL` in your frontend points to your deployed backend URL (e.g., `https://your-api.onrender.com`).
-2. Deploy the `frontend/` folder to Vercel.
-
----
-
-## 📝 Features
-- **Dashboard**: Real-time KPIs and performance charts using Recharts.
-- **CRUD**: Full Create, Read, Update, Delete for campaigns with PostgreSQL.
-- **AI Suite**: Generate Creative Briefs (SSE Stream), Social Captions, and Hashtags.
-- **Real-Time Alerts**: Budget threshold notifications via WebSockets.
-- **Responsive UI**: Polished mobile-first design with a floating sidebar.
+- **Root Directory**: `frontend/`
+- Ensure `VITE_API_BASE_URL` in Vercel settings points to your deployed backend.
 
 ---
 
 ## 📜 Database Schema
-The database is initialized automatically via Docker using `backend/src/db/schema.sql`.
+The database is initialized via `src/db/schema.sql`.
 
-- **Users**: Authentication and JWT handling.
-- **Campaigns**: Storage for metrics (Impressions, Spend, Conversions).
-- **Alerts**: Persistence for budget threshold violations.
+- **Users**: Auth and profile data.
+- **Campaigns**: Performance metrics and budget tracking.
+- **Alerts**: Persistent history of budget threshold violations.
