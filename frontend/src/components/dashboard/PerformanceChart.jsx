@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export function PerformanceChart({ trendsData }) {
+export function PerformanceChart({ trendsData, dateLabel }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -26,7 +26,7 @@ export function PerformanceChart({ trendsData }) {
   return (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle>Performance Trends (30 Days)</CardTitle>
+        <CardTitle>Performance Trends — {dateLabel || 'All Time'}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="w-full mt-4">

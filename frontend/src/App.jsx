@@ -32,6 +32,7 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [campaignToEdit, setCampaignToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: null, end: null, label: '' });
 
   // Authentication persistence
   useEffect(() => {
@@ -78,7 +79,7 @@ function App() {
   };
 
   const computeKPIs = (data) => {
-    let spend = 0; let imp = 0; let clicks = 0; let conversions = 0; let budget = 0;
+    let spend = 0; let imp = 0; let clicks = 0; let conversions = 0;
     data.forEach(c => {
       spend += Number(c.spend);
       imp += Number(c.impressions);
@@ -96,6 +97,42 @@ function App() {
       avgCTR: ctr,
       avgROAS: roas,
       totalSpend: spend
+    });
+  };
+
+  // Filter campaigns by selected date range
+  const getFilteredCampaigns = () => {
+    if (!dateRange.start || !dateRange.end) return campaigns;
+    return campaigns.filter(c => {
+      const created = new Date(c.created_at);
+      return created >= dateRange.start && created <= new Date(dateRange.end.getTime() + 86400000);
+    });
+  };
+
+  const filteredCampaigns = getFilteredCampaigns();
+
+  // Re-compute KPIs when dateRange changes
+  useEffect(() => {
+    computeKPIs(filteredCampaigns);
+  }, [dateRange, campaigns]);
+
+  // Generate chart trends from real campaign data
+  const generateTrends = () => {
+    const fc = filteredCampaigns;
+    if (fc.length === 0) return [];
+    // Sort by created_at
+    const sorted = [...fc].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    let cumulativeImpressions = 0;
+    let cumulativeSpend = 0;
+    return sorted.map((c, i) => {
+      cumulativeImpressions += Number(c.impressions);
+      cumulativeSpend += Number(c.spend);
+      const d = new Date(c.created_at);
+      return {
+        date: `${d.getMonth()+1}/${d.getDate()}`,
+        impressions: cumulativeImpressions,
+        spend: cumulativeSpend,
+      };
     });
   };
 
@@ -142,14 +179,8 @@ function App() {
     return <AuthScreens setToken={setToken} />;
   }
 
-  // Generate basic mock trends for chart to keep it looking nice
-  const mockTrends = [
-    { date: "Day 1", impressions: Math.random()*100000, spend: Math.random()*5000 },
-    { date: "Day 5", impressions: Math.random()*100000, spend: Math.random()*5000 },
-    { date: "Day 10", impressions: Math.random()*100000, spend: Math.random()*5000 },
-    { date: "Day 15", impressions: Math.random()*100000, spend: Math.random()*5000 },
-    { date: "Day 20", impressions: Math.random()*100000, spend: Math.random()*5000 },
-  ];
+  const chartTrends = generateTrends();
+  const chartLabel = dateRange.label || 'All Time';
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground transition-colors duration-200 overflow-hidden">
@@ -184,7 +215,7 @@ function App() {
                     <p className="text-slate-500 mt-1 dark:text-slate-400">Track your campaign performance metrics in real-time.</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <DateRangePicker />
+                    <DateRangePicker onChange={({ start, end, label }) => setDateRange({ start, end, label })} />
                     <button 
                       onClick={() => setCreateModalOpen(true)}
                       className="flex items-center gap-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-white transition-colors"
@@ -195,7 +226,7 @@ function App() {
                 </div>
 
                 <KPICards summary={kpiSummary} />
-                <PerformanceChart trendsData={mockTrends} />
+                <PerformanceChart trendsData={chartTrends} dateLabel={chartLabel} />
                 
                 {isLoading ? (
                   <div className="h-64 flex items-center justify-center mt-6 border border-border rounded-lg text-slate-500">Loading live data from PostgreSQL...</div>
