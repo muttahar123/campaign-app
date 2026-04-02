@@ -5,6 +5,9 @@ import { DateRangePicker } from './components/ui/DateRangePicker';
 import { KPICards } from './components/dashboard/KPICards';
 import { PerformanceChart } from './components/dashboard/PerformanceChart';
 import { CampaignTable } from './components/dashboard/CampaignTable';
+import { CampaignsView } from './components/dashboard/CampaignsView';
+import { ClientsView } from './components/dashboard/ClientsView';
+import { SettingsView } from './components/dashboard/SettingsView';
 import { AISuite } from './components/ai-builder/AISuite';
 import { AuthScreens } from './components/auth/AuthScreens';
 import { CreateCampaignModal } from './components/dashboard/CreateCampaignModal';
@@ -26,6 +29,7 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [campaignToEdit, setCampaignToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -100,6 +104,14 @@ function App() {
     setCampaigns([]);
   };
 
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+  };
+
+  const markOneRead = (index) => {
+    setNotifications(prev => prev.map((n, i) => i === index ? { ...n, is_read: true } : n));
+  };
+
   const handleEditClick = (campaign) => {
     setCampaignToEdit(campaign);
     setEditModalOpen(true);
@@ -141,13 +153,25 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
-      <Header isDark={isDark} toggleDarkMode={toggleDarkMode} notifications={notifications} />
+      <Header 
+        isDark={isDark} 
+        toggleDarkMode={toggleDarkMode} 
+        notifications={notifications}
+        toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onMarkAllRead={markAllRead}
+        onMarkOneRead={markOneRead}
+      />
       
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          isOpen={isMobileMenuOpen}
+          setIsOpen={setIsMobileMenuOpen}
+        />
         
         <main className="flex-1 overflow-y-auto w-full p-4 lg:p-8">
-          <div className="container mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 ease-in-out">
+          <div className="container mx-auto max-w-7xl">
             <div className="flex justify-end mb-4 pr-1">
                <button onClick={logout} className="text-xs font-semibold text-slate-500 hover:text-rose-500 transition-colors uppercase tracking-wider">Sign Out</button>
             </div>
@@ -184,8 +208,23 @@ function App() {
                 )}
 
               </>
+            ) : activeTab === 'clients' ? (
+              <ClientsView campaigns={campaigns} />
+            ) : activeTab === 'campaigns' ? (
+              <CampaignsView 
+                campaigns={campaigns} 
+                onEditClick={handleEditClick} 
+                onDeleteClick={handleDeleteClick} 
+                setCreateModalOpen={setCreateModalOpen} 
+              />
             ) : activeTab === 'builder' ? (
                <AISuite jwtToken={token} />
+            ) : activeTab === 'settings' ? (
+               <SettingsView 
+                 isDark={isDark} 
+                 toggleDarkMode={toggleDarkMode} 
+                 onLogout={logout} 
+               />
             ) : (
               <div className="flex items-center justify-center h-64 text-slate-500">
                 <p>Development in progress...</p>

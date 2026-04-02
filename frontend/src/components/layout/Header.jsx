@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Moon, Sun, Activity, Bell } from 'lucide-react';
+import { Bell, Moon, Sun, Menu, Activity } from 'lucide-react';
 
-export function Header({ isDark, toggleDarkMode, notifications = [] }) {
+export function Header({ isDark, toggleDarkMode, notifications = [], toggleMobileMenu, onMarkAllRead, onMarkOneRead }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -9,6 +9,9 @@ export function Header({ isDark, toggleDarkMode, notifications = [] }) {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-2">
+          <button className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" onClick={toggleMobileMenu}>
+            <Menu className="w-5 h-5" />
+          </button>
           <div className="bg-primary/10 p-2 rounded-lg">
             <Activity className="h-6 w-6 text-primary" />
           </div>
@@ -34,16 +37,25 @@ export function Header({ isDark, toggleDarkMode, notifications = [] }) {
               <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-lg z-50 py-2">
                 <div className="px-4 py-2 border-b border-border flex justify-between items-center">
                   <h3 className="font-semibold text-sm">Notifications</h3>
-                  <span className="text-xs text-primary cursor-pointer hover:underline">Mark all read</span>
+                  <span className="text-xs text-primary cursor-pointer hover:underline" onClick={() => { if (onMarkAllRead) onMarkAllRead(); }}>Mark all read</span>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="p-4 text-center text-sm text-slate-500">No new alerts</div>
                   ) : (
                     notifications.map((notif, i) => (
-                      <div key={i} className={`p-4 text-sm border-b border-border last:border-0 ${!notif.is_read ? 'bg-primary/5' : ''}`}>
-                        <p className="text-slate-800 dark:text-slate-200">{notif.message}</p>
-                        <span className="text-xs text-slate-400 mt-1 block">Just now</span>
+                      <div 
+                        key={i} 
+                        className={`p-4 text-sm border-b border-border last:border-0 cursor-pointer transition-colors ${!notif.is_read ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                        onClick={() => { if (onMarkOneRead) onMarkOneRead(i); }}
+                      >
+                        <div className="flex items-start gap-2">
+                          {!notif.is_read && <span className="mt-1.5 w-2 h-2 rounded-full bg-primary shrink-0"></span>}
+                          <div>
+                            <p className="text-slate-800 dark:text-slate-200">{notif.message}</p>
+                            <span className="text-xs text-slate-400 mt-1 block">Just now</span>
+                          </div>
+                        </div>
                       </div>
                     ))
                   )}
