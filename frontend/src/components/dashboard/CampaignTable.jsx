@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Search, ArrowUpDown } from 'lucide-react';
+import { Search, ArrowUpDown, Edit, Trash2 } from 'lucide-react';
 
-export function CampaignTable({ campaigns }) {
+export function CampaignTable({ campaigns, onEditClick, onDeleteClick }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'spend', direction: 'desc' });
 
@@ -101,12 +101,15 @@ export function CampaignTable({ campaigns }) {
                     <ArrowUpDown className="w-3 h-3 ml-2 opacity-70" />
                   </div>
                 </th>
+                <th scope="col" className="px-6 py-4 font-semibold tracking-wider text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredAndSortedCampaigns.length > 0 ? (
                 filteredAndSortedCampaigns.map((campaign) => (
-                  <tr key={campaign.id} className="bg-card hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                  <tr key={campaign.id} className="bg-card hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group">
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
                       {campaign.name}
                     </td>
@@ -141,11 +144,19 @@ export function CampaignTable({ campaigns }) {
                         );
                       })()}
                     </td>
+                    <td className="px-6 py-4 text-right flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => onEditClick(campaign)} className="text-slate-400 hover:text-primary transition-colors p-1" title="Edit Campaign">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => onDeleteClick(campaign)} className="text-slate-400 hover:text-rose-500 transition-colors p-1" title="Delete Campaign">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
                     No campaigns found matching "{searchTerm}"
                   </td>
                 </tr>

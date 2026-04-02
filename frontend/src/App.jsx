@@ -5,9 +5,10 @@ import { DateRangePicker } from './components/ui/DateRangePicker';
 import { KPICards } from './components/dashboard/KPICards';
 import { PerformanceChart } from './components/dashboard/PerformanceChart';
 import { CampaignTable } from './components/dashboard/CampaignTable';
-import { CreativeBriefBuilder } from './components/ai-builder/CreativeBriefBuilder';
+import { AISuite } from './components/ai-builder/AISuite';
 import { AuthScreens } from './components/auth/AuthScreens';
 import { CreateCampaignModal } from './components/dashboard/CreateCampaignModal';
+import { EditCampaignModal } from './components/dashboard/EditCampaignModal';
 import { useDarkMode } from './hooks/useDarkMode';
 import { io } from 'socket.io-client';
 import { Plus } from 'lucide-react';
@@ -24,6 +25,8 @@ function App() {
   
   const [notifications, setNotifications] = useState([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [campaignToEdit, setCampaignToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Authentication persistence
@@ -97,6 +100,32 @@ function App() {
     setCampaigns([]);
   };
 
+  const handleEditClick = (campaign) => {
+    setCampaignToEdit(campaign);
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteClick = async (campaign) => {
+    if (!confirm(`Are you sure you want to delete ${campaign.name}?`)) return;
+    try {
+      const res = await fetch(`http://localhost:4000/api/campaigns/${campaign.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setCampaigns(prev => {
+          const filtered = prev.filter(c => c.id !== campaign.id);
+          computeKPIs(filtered);
+          return filtered;
+        });
+      } else {
+        alert('Failed to delete campaign');
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
   if (!token) {
     return <AuthScreens setToken={setToken} />;
   }
@@ -147,12 +176,16 @@ function App() {
                 {isLoading ? (
                   <div className="h-64 flex items-center justify-center mt-6 border border-border rounded-lg text-slate-500">Loading live data from PostgreSQL...</div>
                 ) : (
-                  <CampaignTable campaigns={campaigns} />
+                  <CampaignTable 
+                    campaigns={campaigns} 
+                    onEditClick={handleEditClick} 
+                    onDeleteClick={handleDeleteClick} 
+                  />
                 )}
 
               </>
             ) : activeTab === 'builder' ? (
-               <CreativeBriefBuilder jwtToken={token} />
+               <AISuite jwtToken={token} />
             ) : (
               <div className="flex items-center justify-center h-64 text-slate-500">
                 <p>Development in progress...</p>
@@ -171,6 +204,20 @@ function App() {
           setCampaigns([newCamp, ...campaigns]);
           computeKPIs([newCamp, ...campaigns]);
         }} 
+      />
+      
+      <EditCampaignModal
+        isOpen={isEditModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        token={token}
+        campaign={campaignToEdit}
+        onUpdated={(updatedCamp) => {
+          setCampaigns(prev => {
+            const mapped = prev.map(c => c.id === updatedCamp.id ? updatedCamp : c);
+            computeKPIs(mapped);
+            return mapped;
+          });
+        }}
       />
     </div>
   );
