@@ -152,7 +152,7 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
+    <div className="h-screen flex flex-col bg-background text-foreground transition-colors duration-200 overflow-hidden">
       <Header 
         isDark={isDark} 
         toggleDarkMode={toggleDarkMode} 
