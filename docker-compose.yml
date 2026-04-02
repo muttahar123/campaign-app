@@ -17,7 +17,7 @@ services:
   db:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_USER=demo_user
       - POSTGRES_PASSWORD=password
@@ -26,7 +26,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U demo_user -d campaign_db"]
+      test: [ "CMD-SHELL", "pg_isready -U demo_user -d campaign_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
