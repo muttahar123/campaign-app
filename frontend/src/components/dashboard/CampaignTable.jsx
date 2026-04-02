@@ -27,13 +27,21 @@ export function CampaignTable({ campaigns }) {
 
     // Sort
     sortableItems.sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+      if (sortConfig.key === 'roas') {
+        const roasA = a.spend > 0 ? (a.conversions / a.spend) : 0;
+        const roasB = b.spend > 0 ? (b.conversions / b.spend) : 0;
+        if (roasA < roasB) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (roasA > roasB) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      } else {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
     });
 
     return sortableItems;
@@ -124,9 +132,14 @@ export function CampaignTable({ campaigns }) {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">
-                      <span className={campaign.roas >= 3 ? 'text-emerald-500' : campaign.roas >= 2 ? 'text-amber-500' : 'text-rose-500'}>
-                        {campaign.roas.toFixed(1)}x
-                      </span>
+                      {(() => {
+                        const rawRoas = campaign.spend > 0 ? (campaign.conversions / campaign.spend) : 0;
+                        return (
+                          <span className={rawRoas >= 3 ? 'text-emerald-500' : rawRoas >= 2 ? 'text-amber-500' : 'text-rose-500'}>
+                            {rawRoas.toFixed(1)}x
+                          </span>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))

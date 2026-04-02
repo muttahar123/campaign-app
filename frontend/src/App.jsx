@@ -6,58 +6,109 @@ import { KPICards } from './components/dashboard/KPICards';
 import { PerformanceChart } from './components/dashboard/PerformanceChart';
 import { CampaignTable } from './components/dashboard/CampaignTable';
 import { CreativeBriefBuilder } from './components/ai-builder/CreativeBriefBuilder';
+import { AuthScreens } from './components/auth/AuthScreens';
+import { CreateCampaignModal } from './components/dashboard/CreateCampaignModal';
 import { useDarkMode } from './hooks/useDarkMode';
-import mockData from './data/mockData.json';
 import { io } from 'socket.io-client';
+import { Plus } from 'lucide-react';
 
 function App() {
   const [isDark, toggleDarkMode] = useDarkMode();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('jwt_token') || null);
+  
+  const [campaigns, setCampaigns] = useState([]);
+  const [kpiSummary, setKpiSummary] = useState({
+    totalImpressions: 0, totalClicks: 0, totalConversions: 0, avgCTR: 0, avgROAS: 0, totalSpend: 0
+  });
+  
   const [notifications, setNotifications] = useState([]);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Authentication persistence
   useEffect(() => {
-    // Silent automatic login to fetch JWT on load
-    const fetchToken = async () => {
-      try {
-        const username = "demo_" + Math.random().toString(36).substring(7);
-        await fetch('http://localhost:3000/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password: 'password123' })
-        });
-        
-        const res = await fetch('http://localhost:3000/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password: 'password123' })
-        });
-        
-        const data = await res.json();
-        if (data.token) {
-          setToken(data.token);
-        }
-      } catch (err) {
-        console.error("Silent authentication failed:", err);
-      }
-    };
-    fetchToken();
-  }, []);
+    if (token) {
+      localStorage.setItem('jwt_token', token);
+      fetchCampaigns();
+    } else {
+      localStorage.removeItem('jwt_token');
+    }
+  }, [token]);
 
-  // Set up socket integration for Notifications Requirement
+  // Socket Integration
   useEffect(() => {
-    const newSocket = io('http://localhost:3000');
+    if (!token) return;
+    
+    // Explicitly connect to :4000 as configured
+    const newSocket = io('http://localhost:4000');
     
     newSocket.on('budget_alert', (data) => {
-      // Append unread alert
       setNotifications(prev => [{ is_read: false, ...data }, ...prev].slice(0, 10));
     });
 
-    // Mock initial notification for display
-    setNotifications([{ is_read: false, message: 'Alert: Campaign App Install Sprint dropped below 1% CTR.' }]);
-
     return () => newSocket.close();
-  }, []);
+  }, [token]);
+
+  const fetchCampaigns = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/api/campaigns?limit=50', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setCampaigns(json.data || []);
+        computeKPIs(json.data || []);
+      } else {
+        if (res.status === 401 || res.status === 403) setToken(null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch campaigns", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const computeKPIs = (data) => {
+    let spend = 0; let imp = 0; let clicks = 0; let conversions = 0; let budget = 0;
+    data.forEach(c => {
+      spend += Number(c.spend);
+      imp += Number(c.impressions);
+      clicks += Number(c.clicks);
+      conversions += Number(c.conversions);
+    });
+    
+    const ctr = imp > 0 ? ((clicks / imp) * 100).toFixed(2) : 0;
+    const roas = spend > 0 ? (conversions / spend).toFixed(2) : 0;
+    
+    setKpiSummary({
+      totalImpressions: imp,
+      totalClicks: clicks,
+      totalConversions: conversions,
+      avgCTR: ctr,
+      avgROAS: roas,
+      totalSpend: spend
+    });
+  };
+
+  const logout = () => {
+    setToken(null);
+    setCampaigns([]);
+  };
+
+  if (!token) {
+    return <AuthScreens setToken={setToken} />;
+  }
+
+  // Generate basic mock trends for chart to keep it looking nice
+  const mockTrends = [
+    { date: "Day 1", impressions: Math.random()*100000, spend: Math.random()*5000 },
+    { date: "Day 5", impressions: Math.random()*100000, spend: Math.random()*5000 },
+    { date: "Day 10", impressions: Math.random()*100000, spend: Math.random()*5000 },
+    { date: "Day 15", impressions: Math.random()*100000, spend: Math.random()*5000 },
+    { date: "Day 20", impressions: Math.random()*100000, spend: Math.random()*5000 },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
@@ -68,32 +119,59 @@ function App() {
         
         <main className="flex-1 overflow-y-auto w-full p-4 lg:p-8">
           <div className="container mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 ease-in-out">
+            <div className="flex justify-end mb-4 pr-1">
+               <button onClick={logout} className="text-xs font-semibold text-slate-500 hover:text-rose-500 transition-colors uppercase tracking-wider">Sign Out</button>
+            </div>
             
             {activeTab === 'dashboard' ? (
               <>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 mt-2 animate-in fade-in slide-in-from-left-2 gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 mt-2 gap-4">
                   <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard Overview</h1>
                     <p className="text-slate-500 mt-1 dark:text-slate-400">Track your campaign performance metrics in real-time.</p>
                   </div>
-                  <DateRangePicker />
+                  <div className="flex items-center gap-3">
+                    <DateRangePicker />
+                    <button 
+                      onClick={() => setCreateModalOpen(true)}
+                      className="flex items-center gap-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-white transition-colors"
+                    >
+                      <Plus className="w-4 h-4" /> New Campaign
+                    </button>
+                  </div>
                 </div>
 
-                <KPICards summary={mockData.summary} />
-                <PerformanceChart trendsData={mockData.trends} />
-                <CampaignTable campaigns={mockData.campaigns} />
+                <KPICards summary={kpiSummary} />
+                <PerformanceChart trendsData={mockTrends} />
+                
+                {isLoading ? (
+                  <div className="h-64 flex items-center justify-center mt-6 border border-border rounded-lg text-slate-500">Loading live data from PostgreSQL...</div>
+                ) : (
+                  <CampaignTable campaigns={campaigns} />
+                )}
+
               </>
             ) : activeTab === 'builder' ? (
                <CreativeBriefBuilder jwtToken={token} />
             ) : (
               <div className="flex items-center justify-center h-64 text-slate-500">
-                <p>Select Dashboard or AI Builder to explore.</p>
+                <p>Development in progress...</p>
               </div>
             )}
 
           </div>
         </main>
       </div>
+
+      <CreateCampaignModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setCreateModalOpen(false)} 
+        token={token} 
+        onCreated={(newCamp) => {
+          setCampaigns([newCamp, ...campaigns]);
+          computeKPIs([newCamp, ...campaigns]);
+        }} 
+      />
     </div>
   );
 }

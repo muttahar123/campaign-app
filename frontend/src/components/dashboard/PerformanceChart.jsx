@@ -29,8 +29,8 @@ export function PerformanceChart({ trendsData }) {
         <CardTitle>Performance Trends (30 Days)</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full mt-4">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full mt-4">
+          <ResponsiveContainer width="100%" height={400} minWidth={0}>
             <LineChart
               data={trendsData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}

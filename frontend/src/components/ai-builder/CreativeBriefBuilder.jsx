@@ -24,8 +24,6 @@ export function CreativeBriefBuilder({ jwtToken }) {
     setIsGenerating(true);
     setResultText('');
 
-    // Backend specifically expects {product, tone, platform, word_limit}
-    // We compose the "product" description meticulously out of the form variables to obey the exact prompt guidelines
     const compositeProductPayload = `
       Brief context for ${formData.clientName} (${formData.industry}). Website: ${formData.website}. 
       Objective: ${formData.objective}. Audience: ${formData.audience}. Budget: ${formData.budget}.
@@ -34,7 +32,7 @@ export function CreativeBriefBuilder({ jwtToken }) {
     `;
 
     try {
-      const response = await fetch('http://localhost:3000/api/generate/copy', {
+      const response = await fetch('http://localhost:4000/api/generate/copy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
