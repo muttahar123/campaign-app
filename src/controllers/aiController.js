@@ -47,10 +47,11 @@ Format the output precisely to include:
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error) {
-    console.error('OpenAI Error:', error);
+    console.error('OpenAI Error:', error.message);
     if (!res.headersSent) {
-      res.status(500).json({ error: 'Error generating copy' });
+      res.status(500).json({ error: error.message || 'Error generating copy' });
     } else {
+      res.write(`data: {"error": "${error.message}"}\n\n`);
       res.end();
     }
   }
@@ -76,8 +77,8 @@ export const generateSocial = async (req, res) => {
     const rawContent = response.choices[0].message.content;
     res.json(JSON.parse(rawContent));
   } catch (err) {
-    console.error('OpenAI Error:', err);
-    res.status(500).json({ error: 'Failed to generate social copy' });
+    console.error('OpenAI Error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to generate social copy' });
   }
 };
 
@@ -100,7 +101,7 @@ export const generateHashtags = async (req, res) => {
 
     res.json(JSON.parse(response.choices[0].message.content));
   } catch (err) {
-    console.error('OpenAI Error:', err);
-    res.status(500).json({ error: 'Failed to generate hashtags' });
+    console.error('OpenAI Error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to generate hashtags' });
   }
 };
